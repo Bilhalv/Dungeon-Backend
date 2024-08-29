@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Foods {
+  id              String            @id @default(cuid())
+  name            String            @db.VarChar(40)
+  description     String            @db.LongText
+  price           Decimal           @db.Decimal(10, 2)
+  img             String
+  MonstersOnFoods MonstersOnFoods[]
+  UsersOnFoods    UsersOnFoods[]
+
+  @@map("food")
+}
+
+model Monsters {
+  id              String            @id @default(cuid())
+  name            String
+  MonstersOnFoods MonstersOnFoods[]
+
+  @@map("monster")
+}
+
+model MonstersOnFoods {
+  id         String   @id @default(cuid())
+  food       Foods    @relation(fields: [food_id], references: [id])
+  food_id    String
+  monster    Monsters @relation(fields: [monster_id], references: [id])
+  monster_id String
+
+  @@map("monster_on_food")
+}
+
+model UsersOnFoods {
+  id      String @id @default(cuid())
+  food    Foods  @relation(fields: [food_id], references: [id])
+  food_id String
+  user    Users  @relation(fields: [user_id], references: [id])
+  user_id String
+
+  @@map("user_on_food")
+}
+
+model Users {
+  id       String  @id @default(cuid())
+  name     String
+  email    String  @unique
+  password String
+  admin    Boolean @default(false)
+
+  UsersOnFoods UsersOnFoods[]
+
+  @@map("user")
+}
