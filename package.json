@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "dev": "npx ts-node-dev --respawn index.ts"
+    "dev": "npx ts-node-dev --respawn index.ts",
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",
