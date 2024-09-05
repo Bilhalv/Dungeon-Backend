@@ -4,14 +4,15 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
 model Foods {
   id              String            @id @default(cuid())
   name            String            @db.VarChar(40)
-  description     String            @db.LongText
+  description     String            @db.VarChar(200)
   price           Decimal           @db.Decimal(10, 2)
   img             String
   MonstersOnFoods MonstersOnFoods[]
