@@ -15,6 +15,32 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/:id", async (req, res) => {
+  try {
+    const foods = await prisma.foods.findMany(
+      {
+        where: { id: req.params.id },
+      }
+    );
+    res.status(200).json(foods);
+  } catch (error) {
+    res.status(400).json(error);
+  }
+});
+
+router.get("/:id", async (req, res) => {
+  try {
+    const foods = await prisma.foods.findMany(
+      {
+        where: { id: req.params.id },
+      }
+    );
+    res.status(200).json(foods);
+  } catch (error) {
+    res.status(400).json(error);
+  }
+});
+
 router.post("/", async (req, res) => {
   const { name, description, price, img } = req.body;
 
