@@ -28,11 +28,11 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/search/:name", async (req, res) => {
   try {
     const foods = await prisma.foods.findMany(
       {
-        where: { id: req.params.id },
+        where: { name: { contains: req.params.name, mode: "insensitive" } },
       }
     );
     res.status(200).json(foods);
