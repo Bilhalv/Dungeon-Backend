@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url = env("POSTGRES_PRISMA_URL")
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
   directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
@@ -15,7 +15,7 @@ model Foods {
   price           Decimal           @db.Decimal(10, 2)
   img             String
   MonstersOnFoods MonstersOnFoods[]
-  UsersOnFoods    UsersOnFoods[]
+  CarrinhosonFood CarrinhosonFood[]
 
   @@map("food")
 }
@@ -23,6 +23,8 @@ model Foods {
 model Monsters {
   id              String            @id @default(cuid())
   name            String
+  desc            String
+  img             String
   MonstersOnFoods MonstersOnFoods[]
 
   @@map("monster")
@@ -30,22 +32,35 @@ model Monsters {
 
 model MonstersOnFoods {
   id         String   @id @default(cuid())
-  food       Foods    @relation(fields: [food_id], references: [id])
   food_id    String
-  monster    Monsters @relation(fields: [monster_id], references: [id])
   monster_id String
+  monster    Monsters @relation(fields: [monster_id], references: [id])
+  food       Foods    @relation(fields: [food_id], references: [id])
 
   @@map("monster_on_food")
 }
 
-model UsersOnFoods {
-  id      String @id @default(cuid())
-  food    Foods  @relation(fields: [food_id], references: [id])
-  food_id String
-  user    Users  @relation(fields: [user_id], references: [id])
-  user_id String
+model Produtos {
+  id          String     @id @default(cuid())
+  id_food     String
+  id_carrinho String
+  amount      Int
+  price       Decimal
+  Carrinhos   Carrinhos? @relation(fields: [carrinhosId], references: [id])
+  carrinhosId String?
 
-  @@map("user_on_food")
+  @@map("produto")
+}
+
+model Carrinhos {
+  id              String            @id @default(cuid())
+  items           Produtos[]
+  user_id         String
+  total           Decimal
+  sold            Boolean           @default(false)
+  CarrinhosonFood CarrinhosonFood[]
+
+  @@map("carrinho")
 }
 
 model Users {
@@ -54,8 +69,16 @@ model Users {
   email    String  @unique
   password String
   admin    Boolean @default(false)
+  // recuperação
 
-  UsersOnFoods UsersOnFoods[]
 
   @@map("user")
+}
+
+model CarrinhosonFood {
+  id          String    @id @default(cuid())
+  food_id     String
+  carrinho_id String
+  carrinho    Carrinhos @relation(fields: [carrinho_id], references: [id])
+  food        Foods     @relation(fields: [food_id], references: [id])
 }
