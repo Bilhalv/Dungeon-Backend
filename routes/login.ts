@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 const prisma = new PrismaClient();
 const router = Router();
@@ -28,12 +29,13 @@ router.post("/", async (req, res) => {
     return;
   }
 
-  const token = jwt.sign({ id: user.id }, process.env.SECRET_KEY!, {
+  const key = crypto.randomBytes(32).toString("hex");
+
+  const token = jwt.sign({ id: user.id }, key, {
     expiresIn: "1h",
   });
 
   res.json({ token });
 });
-
 
 export default router;
