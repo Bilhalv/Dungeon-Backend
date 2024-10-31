@@ -33,7 +33,7 @@ router.post("/", async (req, res) => {
     res.status(400).json({ erro: "Informe user_id" });
     return;
   }
-  const total = items.reduce((acc, item) => {
+  const total = items.reduce((acc: number, item: { price: number; quantity: number; }) => {
     return acc + item.price * item.quantity;
   });
 
@@ -45,7 +45,7 @@ router.post("/", async (req, res) => {
         sold: false,
         items: {
           createMany: {
-            data: items.map((item) => ({
+            data: items.map((item: { food_id: any; quantity: any; }) => ({
               food_id: item.food_id,
               quantity: item.quantity,
             })),
@@ -86,7 +86,7 @@ router.put("/:id", async (req, res) => {
     select: { total: true },
   });
 
-  var total = items.reduce((acc, item) => {
+  var total = items.reduce((acc: number, item: { price: number; quantity: number; }) => {
     return acc + item.price * item.quantity;
   });
 
@@ -99,7 +99,7 @@ router.put("/:id", async (req, res) => {
         total,
         sold,
         items: {
-          upsert: items.map((item) => ({
+          upsert: items.map((item: { food_id: any; quantity: any; }) => ({
             where: {
               food_id_carrinho_id: {
                 food_id: item.food_id,
