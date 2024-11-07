@@ -27,15 +27,28 @@ router.post("/", async (req, res) => {
   if (!isMatch) {
     res.status(401).json({ erro: "Senha incorreta" });
     return;
+  } else {
+    res.status(200).json({
+      id: user.id,
+    });
   }
+});
 
-  const key = crypto.randomBytes(32).toString("hex");
+router.get("/:id", async (req, res) => {
+  const id = req.params.id;
+  if (!id) {
+    res.status(400).json({ erro: "Informe id" });
+    return;
+  }
+  const user = await prisma.users.findUnique({ where: { id: id } });
 
-  const token = jwt.sign({ id: user.id }, key, {
-    expiresIn: "1h",
-  });
-
-  res.json({ token });
+  if (!user) {
+    res.status(404).json({ erro: "Usuário nao encontrado" });
+    return;
+  } else {
+    res.status(200).json(user);
+    return;
+  }
 });
 
 export default router;
