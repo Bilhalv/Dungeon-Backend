@@ -17,8 +17,8 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const carrinho = await prisma.carrinhos.findUnique({
-      where: { id: req.params.id },
+    const carrinho = await prisma.carrinhos.findFirst({
+      where: { user_id: req.params.id, sold: false },
       include: { items: true },
     });
     res.status(200).json(carrinho);
