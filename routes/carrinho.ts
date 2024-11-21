@@ -78,92 +78,89 @@ router.delete("/:id", async (req, res) => {
 
 router.post("/:id/items", async (req, res) => {
   const { id } = req.params;
-  const { items } = req.body;
+  const { id_food, price } = req.body;
 
-  type item = {
-    id_food: string;
-    amount: number;
-    price: string;
-  };
-
-  if (!items) {
-    res.status(400).json({ erro: "Informe pelo menos um item." });
+  if (!id_food || !price) {
+    res.status(400).json({ erro: "Informe id_food e price os campos." });
     return;
   }
 
-  const previousTotal = await prisma.carrinhos.findUnique({
-    where: { id },
-    select: { total: true },
-  });
-
-  var total: number = items.reduce((acc: number, item: item) => {
-    const price = parseFloat(item.price.replace(",", "."));
-    return acc + price * item.amount;
-  }, 0);
-
-  total += parseFloat((previousTotal?.total ?? "0").toString());
-
   try {
-    for (const item of items) {
-      const produto = await prisma.produtos.findFirst({
-        where: {
-          id_carrinho: id,
-          id_food: item.food_id,
-        },
-      });
-
-      if (!produto) {
-        await prisma.carrinhos.update({
-          where: { id },
-          data: {
-            total: total,
-            items: {
-              createMany: {
-                data: [
-                  {
-                    id_carrinho: id,
-                    id_food: item.id_food,
-                    amount: item.amount,
-                    price: item.price,
-                  },
-                ],
-              },
-            },
-          },
-        });
-      } else {
-        await prisma.produtos.update({
-          where: { id: produto.id },
-          data: {
-            amount: produto.amount + item.amount,
-          },
-        });
-      }
-    }
-
-    const carrinho = await prisma.carrinhos.update({
-      where: { id },
-      data: {
-        total,
+    // check if there is already an item
+    const getCarrinho = await prisma.carrinhos.findFirst({
+      where: {
+        user_id: id,
       },
     });
-    res.status(200).json(carrinho);
+    const findExistingItem = await prisma.produtos.findFirst({
+      where: {
+        id_carrinho: getCarrinho?.id ?? "",
+        id_food: id_food,
+      },
+    });
+
+    if (findExistingItem) {
+      // update the existing item
+      const updatedItem = await prisma.produtos.update({
+        where: {
+          id: findExistingItem.id,
+        },
+        data: {
+          amount: findExistingItem.amount + 1,
+        },
+      });
+      res.status(200).json(updatedItem);
+    } else {
+      const newItem = await prisma.produtos.create({
+        data: {
+          id_carrinho: id,
+          id_food: id_food,
+          price: price,
+          amount: 1,
+        },
+      });
+      res.status(201).json(newItem);
+    }
   } catch (error) {
     res.status(400).json(error);
   }
 });
 
-router.delete("/:id/items/:itemId", async (req, res) => {
-  const { id, itemId } = req.params;
+router.delete("/:id/items/:foodID", async (req, res) => {
+  const { id, foodID } = req.params;
+
+  const findID = await prisma.produtos.findFirst({
+    where: {
+      id_carrinho: id,
+      id_food: foodID,
+    },
+  });
+
+  if (!findID) {
+    res.status(400).json({ erro: "Item não encontrado" });
+    return;
+  }
 
   try {
-    const item = await prisma.produtos.delete({
-      where: {
-        id: itemId,
-      },
-    });
-
-    res.status(200).json(item);
+    if (findID.amount > 1) {
+      const updatedItem = await prisma.produtos.update({
+        where: {
+          id: findID.id,
+        },
+        data: {
+          amount: findID.amount - 1,
+        },
+      });
+      res.status(200).json(updatedItem);
+      return;
+    } else {
+      const item = await prisma.produtos.delete({
+        where: {
+          id: findID.id,
+        },
+      });
+      res.status(200).json(item);
+    }
   } catch (error) {
     res.status(400).json(error);
   }
