@@ -5,11 +5,11 @@ import bcrypt from "bcrypt";
 const prisma = new PrismaClient();
 const router = Router();
 
-router.post("/register", async (req, res) => {
+router.post("/", async (req, res) => {
   const { name, email, password } = req.body;
 
   if (!name || !email || !password) {
-    res.status(400).json({ erro: "Informe name, email e senha" });
+    res.status(400).json({ erro: "Informe name, email e password" });
     return;
   }
 
