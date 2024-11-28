@@ -131,4 +131,17 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+router.put("/:idFood/monster/:idMonster", async (req, res) => {
+  const { idFood, idMonster } = req.params;
+
+  try {
+    const food = await prisma.monstersOnFoods.create({
+      data: { food_id: idFood, monster_id: idMonster },
+    });
+    res.status(200).json(food);
+  } catch (error) {
+    res.status(400).json(error);
+  }
+});
+
 export default router;

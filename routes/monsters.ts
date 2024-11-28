@@ -6,10 +6,32 @@ const prisma = new PrismaClient({
 });
 const router = Router();
 
+async function formatMonster(id: string) {
+  const monster = await prisma.monsters.findUnique({
+    where: { id },
+  });
+
+  const foodsOnMonsters = await prisma.monstersOnFoods.findMany({
+    where: { monster_id: id },
+  });
+
+  const foods = await prisma.foods.findMany({
+    where: { id: { in: foodsOnMonsters.map((f) => f.food_id) } },
+    select: {
+      id: true,
+      name: true,
+      img: true,
+    },
+  });
+
+  return { ...monster, foods: foods };
+}
+
 router.get("/", async (req, res) => {
   try {
     const monsters = await prisma.monsters.findMany();
-    res.status(200).json(monsters);
+    const results = await Promise.all(monsters.map((m) => formatMonster(m.id)));
+    res.status(200).json(results);
   } catch (error) {
     res.status(400).json(error);
   }
@@ -17,24 +39,7 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const monsters = await prisma.monsters.findMany(
-      {
-        where: { id: req.params.id },
-      }
-    );
-    res.status(200).json(monsters);
-  } catch (error) {
-    res.status(400).json(error);
-  }
-});
-
-router.get("/search/:name", async (req, res) => {
-  try {
-    const monsters = await prisma.monsters.findMany(
-      {
-        where: { name: { contains: req.params.name, mode: "insensitive" } },
-      }
-    );
+    const monsters = await formatMonster(req.params.id);
     res.status(200).json(monsters);
   } catch (error) {
     res.status(400).json(error);
