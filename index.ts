@@ -5,6 +5,7 @@ import loginRoutes from "./routes/login";
 import recoveryRoutes from "./routes/recovery";
 import registerRoutes from "./routes/register";
 import monstersRoutes from "./routes/monsters";
+import adminRoutes from "./routes/admin";
 import cors from "cors";
 
 const app = express();
@@ -19,6 +20,7 @@ app.use("/login", loginRoutes);
 app.use("/recovery", recoveryRoutes);
 app.use("/register", registerRoutes);
 app.use("/monsters", monstersRoutes);
+app.use("/admin", adminRoutes);
 
 app.get("/", (req, res) => {
   res.send("API: Sistema de Gerenciamento de Restaurante");
