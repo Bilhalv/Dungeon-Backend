@@ -39,4 +39,18 @@ router.get("/", async (req, res) => {
   res.status(200).json(users);
 });
 
+router.get("/:id", async (req, res) => {
+  const id = req.params.id;
+  if (!id) {
+    res.status(400).json({ erro: "Informe id" });
+    return;
+  }
+  const user = await prisma.users.findUnique({ where: { id: id } });
+  if (!user) {
+    res.status(404).json({ erro: "Usuário nao encontrado" });
+    return;
+  }
+  res.status(200).json(user.admin);
+})
+
 export default router;
