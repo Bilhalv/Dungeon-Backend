@@ -8,29 +8,59 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
-model Foods {
-  id              String            @id @default(cuid())
-  name            String            @db.VarChar(40)
-  description     String            @db.VarChar(200)
-  price           Decimal           @db.Decimal(10, 2)
-  img             String
-  MonstersOnFoods MonstersOnFoods[]
-  CarrinhosonFood CarrinhosonFood[]
+// This is the Prisma schema for the database.
+// Each model is a table in the database and the
+// columns are the fields in the table.
 
+// The Foods model represents a food item in the database.
+// It has a unique id, a name, a description, a price, and
+// an image. It also has a relation to the monsterFoods model
+// which represents the many-to-many relationship between
+// foods and monsters.
+
+model Foods {
+  id           String         @id @default(cuid())
+  name         String         @db.VarChar(40)
+  description  String         @db.VarChar(200)
+  price        Decimal        @db.Decimal(10, 2)
+  img          String
+  monsterFoods monsterFoods[]
+  foodCart     foodCart[]
+
+  // This is a comment explaining the purpose of the @@map
+  // directive. The @@map directive is used to specify
+  // a custom name for the table that the model is
+  // mapped to in the database.
+  //
+  // In this case, the table is named "food" instead
+  // of "Foods" which is the default name that Prisma
+  // would use.
+  //
+  // The @@map directive is optional and can be omitted
+  // if the default name is acceptable.
   @@map("food")
 }
 
+// The Monsters model represents a monster in the database.
+// It has a unique id, a name, a description, and an image.
+// It also has a relation to the monsterFoods model which
+// represents the many-to-many relationship between
+// monsters and foods.
 model Monsters {
-  id              String            @id @default(cuid())
-  name            String
-  desc            String
-  img             String
-  MonstersOnFoods MonstersOnFoods[]
+  id           String         @id @default(cuid())
+  name         String
+  desc         String
+  img          String
+  monsterFoods monsterFoods[]
 
   @@map("monster")
 }
 
-model MonstersOnFoods {
+// The monsterFoods model represents the many-to-many
+// relationship between foods and monsters. It has a
+// unique id, a foreign key to the Foods model, and
+// a foreign key to the Monsters model.
+model monsterFoods {
   id         String   @id @default(cuid())
   food_id    String
   monster_id String
@@ -40,45 +70,53 @@ model MonstersOnFoods {
   @@map("monster_on_food")
 }
 
-model Produtos {
-  id          String     @id @default(cuid())
-  id_food     String
-  id_carrinho String
-  amount      Int
-  price       Decimal
-  Carrinhos   Carrinhos? @relation(fields: [carrinhosId], references: [id])
-  carrinhosId String?
+// The foodCart model represents a food item in a cart.
+// It has a unique id, a foreign key to the Foods model,
+// a foreign key to the Cart model, the amount of the
+// food item in the cart, and the price of the food item.
+model foodCart {
+  id      String  @id @default(cuid())
+  id_food String
+  id_cart String
+  amount  Int
+  price   Decimal
+  Cart    Cart    @relation(fields: [id_cart], references: [id])
+  Foods   Foods   @relation(fields: [id_food], references: [id])
 
   @@map("produto")
 }
 
-model Carrinhos {
-  id              String            @id @default(cuid())
-  items           Produtos[]
-  user_id         String
-  total           Decimal
-  sold            Boolean           @default(false)
-  CarrinhosonFood CarrinhosonFood[]
+// The Cart model represents a shopping cart in the database.
+// It has a unique id, a foreign key to the Users model,
+// a total price for all items in the cart, a boolean
+// indicating whether the cart is sold or not, and a
+// relation to the foodCart model which represents the
+// many-to-many relationship between carts and food
+// items.
+model Cart {
+  id      String     @id @default(cuid())
+  user_id String
+  total   Decimal    @default(0)
+  sold    Boolean    @default(false)
+  items   foodCart[]
+  User    Users      @relation(fields: [user_id], references: [id])
 
   @@map("carrinho")
 }
 
+// The Users model represents a user in the database.
+// It has a unique id, a name, an email, a password, and
+// a boolean indicating whether the user is an admin or not.
+// It also has a relation to the Cart model which represents
+// the one-to-many relationship between users and carts.
 model Users {
   id       String  @id @default(cuid())
   name     String
   email    String  @unique
   password String
   admin    Boolean @default(false)
-  // recuperação
-
+  carts    Cart[]
+  recovery String?
 
   @@map("user")
-}
-
-model CarrinhosonFood {
-  id          String    @id @default(cuid())
-  food_id     String
-  carrinho_id String
-  carrinho    Carrinhos @relation(fields: [carrinho_id], references: [id])
-  food        Foods     @relation(fields: [food_id], references: [id])
 }

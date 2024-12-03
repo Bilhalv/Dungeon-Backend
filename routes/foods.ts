@@ -16,14 +16,14 @@ async function formatFood(id: string) {
       return { erro: "Refeição não encontrada" };
     }
 
-    const carrinhosSoldAmt = await prisma.carrinhos.count({
+    const cartSoldAmt = await prisma.cart.count({
       where: { sold: true },
     });
-    const carrinhosPendingAmt = await prisma.carrinhos.count({
+    const cartPendingAmt = await prisma.cart.count({
       where: { sold: false },
     });
 
-    const monstersOnFood = await prisma.monstersOnFoods.findMany({
+    const monstersOnFood = await prisma.monsterFoods.findMany({
       where: { food_id: food.id },
     });
     const monsters = await prisma.monsters.findMany({
@@ -32,8 +32,8 @@ async function formatFood(id: string) {
 
     return {
       ...food,
-      carrinhosSold: carrinhosSoldAmt,
-      carrinhosPending: carrinhosPendingAmt,
+      cartSold: cartSoldAmt,
+      cartPending: cartPendingAmt,
       monsters,
     };
   } catch (error) {
@@ -135,7 +135,7 @@ router.put("/:idFood/monster/:idMonster", async (req, res) => {
   const { idFood, idMonster } = req.params;
 
   try {
-    const food = await prisma.monstersOnFoods.create({
+    const food = await prisma.monsterFoods.create({
       data: { food_id: idFood, monster_id: idMonster },
     });
     res.status(200).json(food);

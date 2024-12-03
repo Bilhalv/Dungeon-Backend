@@ -11,7 +11,7 @@ async function formatMonster(id: string) {
     where: { id },
   });
 
-  const foodsOnMonsters = await prisma.monstersOnFoods.findMany({
+  const foodsOnMonsters = await prisma.monsterFoods.findMany({
     where: { monster_id: id },
   });
 
