@@ -41,6 +41,15 @@ router.post("/", async (req, res) => {
     0
   );
 
+  // checking if the user already has a cart
+  const cart = await prisma.carrinhos.findFirst({
+    where: { user_id, sold: false },
+  });
+  if (cart) {
+    res.status(400).json({ erro: "O usuário ja possui um carrinho" });
+    return;
+  }
+
   try {
     const carrinho = await prisma.carrinhos.create({
       data: {
@@ -76,8 +85,8 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-router.post("/:id/items", async (req, res) => {
-  const { id } = req.params;
+router.post("/:idUser/items", async (req, res) => {
+  const { idUser } = req.params;
   const { id_food, price } = req.body;
 
   if (!id_food || !price) {
@@ -89,7 +98,7 @@ router.post("/:id/items", async (req, res) => {
     // check if there is already an item
     const getCarrinho = await prisma.carrinhos.findFirst({
       where: {
-        user_id: id,
+        user_id: idUser,
       },
     });
     const findExistingItem = await prisma.produtos.findFirst({
@@ -113,7 +122,7 @@ router.post("/:id/items", async (req, res) => {
     } else {
       const newItem = await prisma.produtos.create({
         data: {
-          id_carrinho: id,
+          id_carrinho: idUser,
           id_food: id_food,
           price: price,
           amount: 1,
@@ -126,12 +135,12 @@ router.post("/:id/items", async (req, res) => {
   }
 });
 
-router.delete("/:id/items/:foodID", async (req, res) => {
-  const { id, foodID } = req.params;
+router.delete("/:idUser/items/:foodID", async (req, res) => {
+  const { idUser, foodID } = req.params;
 
   const findID = await prisma.produtos.findFirst({
     where: {
-      id_carrinho: id,
+      id_carrinho: idUser,
       id_food: foodID,
     },
   });
