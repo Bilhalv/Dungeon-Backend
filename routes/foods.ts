@@ -97,6 +97,17 @@ router.delete("/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
+    // Delete the foods-cart relations
+    await prisma.foodCart.deleteMany({
+      where: { id_food: id },
+    });
+
+    // Delete the monsters-foods relations
+    await prisma.monsterFoods.deleteMany({
+      where: { food_id: id },
+    });
+
+    // Delete the food
     const food = await prisma.foods.delete({
       where: { id: id },
     });
