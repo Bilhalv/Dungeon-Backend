@@ -12,7 +12,9 @@ const router = Router();
  */
 router.get("/", async (req, res) => {
   try {
-    const carrinhos = await prisma.cart.findMany();
+    const carrinhos = await prisma.cart.findMany(
+      { include: { items: true } }
+    );
     res.status(200).json(carrinhos);
   } catch (error) {
     res.status(400).json(error);
@@ -77,6 +79,10 @@ router.delete("/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
+    await prisma.foodCart.deleteMany({
+      where: { id_cart: id },
+    });
+
     const carrinho = await prisma.cart.delete({
       where: { id },
     });
